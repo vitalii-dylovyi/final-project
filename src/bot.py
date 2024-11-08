@@ -1,11 +1,10 @@
 from typing import List, Tuple, Callable
-import pickle
-from models import ValidationError
-from record import Record
-from address_book import AddressBook
+from .services.storage import AddressBook
+from .services.record import Record
+from .models.base import ValidationError
 
 
-def input_error(func: Callable) -> Callable:
+def input_error(func: Callable):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
@@ -14,36 +13,20 @@ def input_error(func: Callable) -> Callable:
         except IndexError:
             return "Please provide all required arguments"
         except KeyError as e:
-            return f"Contact not found: {str(e)}"
+            return f"Not found: {str(e)}"
         except Exception as e:
             return f"An error occurred: {str(e)}"
 
     return wrapper
 
 
-def parse_input(user_input: str) -> Tuple[str, List[str]]:
-    parts = user_input.strip().split()
-    if not parts:
-        return "", []
-    return parts[0].lower(), parts[1:]
-
-
-def save_data(book: AddressBook, filename: str = "addressbook.pkl") -> None:
-    with open(filename, "wb") as f:
-        pickle.dump(book, f)
-
-
-def load_data(filename: str = "addressbook.pkl") -> AddressBook:
-    try:
-        with open(filename, "rb") as f:
-            return pickle.load(f)
-    except FileNotFoundError:
-        return AddressBook()
-
-
 class Bot:
     def __init__(self):
-        self.book = load_data()
+        self.book = AddressBook()
+        self.book.load_from_file()
+        self._setup_commands()
+
+    def _setup_commands(self):
         self.commands = {
             "add": self.add_contact,
             "change": self.change_contact,
@@ -55,6 +38,13 @@ class Bot:
             "help": self.show_help,
             "hello": lambda _: "How can I help you?",
         }
+
+    def save_data(self):
+        self.book.save_to_file()
+
+    def parse_input(self, user_input: str) -> Tuple[str, List[str]]:
+        parts = user_input.strip().split()
+        return (parts[0].lower(), parts[1:]) if parts else ("", [])
 
     @input_error
     def add_contact(self, args: List[str]) -> str:
@@ -69,7 +59,7 @@ class Bot:
         else:
             message = "Contact updated."
         record.add_phone(phone)
-        save_data(self.book)
+        self.save_data()
         return message
 
     @input_error
@@ -81,7 +71,7 @@ class Bot:
         if not record:
             raise KeyError(name)
         record.edit_phone(old_phone, new_phone)
-        save_data(self.book)
+        self.save_data()
         return "Phone number updated."
 
     @input_error
@@ -108,7 +98,7 @@ class Bot:
         if not record:
             raise KeyError(name)
         record.add_birthday(birthday)
-        save_data(self.book)
+        self.save_data()
         return "Birthday added."
 
     @input_error
@@ -123,8 +113,9 @@ class Bot:
         return f"{args[0]}'s birthday: {record.birthday}"
 
     @input_error
-    def birthdays(self, _: List[str]) -> str:
-        upcoming = self.book.get_upcoming_birthdays()
+    def birthdays(self, args: List[str]) -> str:
+        days = int(args[0]) if args else 7
+        upcoming = self.book.get_upcoming_birthdays(days)
         if not upcoming:
             return "No upcoming birthdays."
         return "\n".join(
@@ -146,14 +137,13 @@ class Bot:
     - exit/close - Exit the program"""
 
     def run(self) -> None:
-        print("Welcome to the assistant bot! Type 'help' for commands.")
-
+        print("Welcome to the personal assistant! Type 'help' for commands.")
         while True:
             user_input = input("Enter a command: ").strip()
-            command, args = parse_input(user_input)
+            command, args = self.parse_input(user_input)
 
             if command in ["close", "exit"]:
-                save_data(self.book)
+                self.save_data()
                 print("Good bye!")
                 break
 

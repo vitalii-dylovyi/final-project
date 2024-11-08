@@ -1,5 +1,11 @@
 from typing import Optional
-from models import Name, Phone, Birthday, PhoneList, ValidationError
+from ..models.contact import (
+    Name,
+    Phone,
+    Birthday,
+    PhoneList,
+    ValidationError,
+)
 
 
 class Record:
@@ -16,7 +22,7 @@ class Record:
     def remove_phone(self, phone: str) -> None:
         normalized = Phone.normalize_phone(phone)
         original_length = len(self.phones)
-        self.phones = [p for p in self.phones if p.value != normalized]
+        self.phones = PhoneList([p for p in self.phones if p.value != normalized])
         if len(self.phones) == original_length:
             raise ValidationError(f"Phone number {phone} not found")
 
@@ -36,6 +42,9 @@ class Record:
         self.birthday = Birthday(birthday)
 
     def __str__(self) -> str:
-        phones_str = "; ".join(p.value for p in self.phones)
-        birthday_str = f", birthday: {self.birthday}" if self.birthday else ""
-        return f"Contact name: {self.name.value}, phones: {phones_str}{birthday_str}"
+        parts = [f"Contact name: {self.name.value}"]
+        if self.phones:
+            parts.append(f"phones: {self.phones}")
+        if self.birthday:
+            parts.append(f"birthday: {self.birthday}")
+        return ", ".join(parts)

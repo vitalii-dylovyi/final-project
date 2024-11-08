@@ -1,7 +1,8 @@
 from collections import UserDict
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict
-from record import Record
+import pickle
+from .record import Record
 
 
 class AddressBook(UserDict):
@@ -33,7 +34,7 @@ class AddressBook(UserDict):
             days_until = (birthday_this_year - today).days
             if 0 <= days_until <= days:
                 congratulation_date = birthday_this_year
-                if birthday_this_year.weekday() >= 5:  # Weekend
+                if birthday_this_year.weekday() >= 5:
                     congratulation_date += timedelta(
                         days=(7 - birthday_this_year.weekday())
                     )
@@ -50,3 +51,14 @@ class AddressBook(UserDict):
             upcoming_birthdays,
             key=lambda x: datetime.strptime(x["birthday"], "%d.%m.%Y"),
         )
+
+    def save_to_file(self, filename: str = "addressbook.pkl") -> None:
+        with open(filename, "wb") as f:
+            pickle.dump(self.data, f)
+
+    def load_from_file(self, filename: str = "addressbook.pkl") -> None:
+        try:
+            with open(filename, "rb") as f:
+                self.data = pickle.load(f)
+        except FileNotFoundError:
+            self.data = {}
