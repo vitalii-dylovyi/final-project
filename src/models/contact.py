@@ -12,6 +12,19 @@ class Name(Field):
             raise ValidationError("Name can only contain letters, numbers, and spaces")
 
 
+class Email(Field):
+    def validate(self, value: str):
+        pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+        if not re.match(pattern, value):
+            raise ValidationError("Invalid email format")
+
+
+class Address(Field):
+    def validate(self, value: str):
+        if not value or not value.strip():
+            raise ValidationError("Address cannot be empty")
+
+
 class PhoneList(UserList):
     def __str__(self) -> str:
         return f"{'; '.join(p.value for p in self.data)}"

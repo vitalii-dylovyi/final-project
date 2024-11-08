@@ -32,9 +32,13 @@ class Bot:
             "change": self.change_contact,
             "phone": self.show_phone,
             "all": self.show_all,
+            "find": self.find_contacts,
+            "delete-contact": self.delete_contact,
             "add-birthday": self.add_birthday,
             "show-birthday": self.show_birthday,
             "birthdays": self.birthdays,
+            "add-email": self.add_email,
+            "add-address": self.add_address,
             "help": self.show_help,
             "hello": lambda _: "How can I help you?",
         }
@@ -90,6 +94,31 @@ class Bot:
         return "\n".join(str(record) for record in self.book.data.values())
 
     @input_error
+    def find_contacts(self, args: List[str]) -> str:
+        if not args:
+            raise IndexError
+        query = args[0].lower()
+        matches = []
+        for record in self.book.data.values():
+            if (
+                query in record.name.value.lower()
+                or any(query in phone.value for phone in record.phones)
+                or (record.email and query in record.email.value.lower())
+                or (record.address and query in record.address.value.lower())
+            ):
+                matches.append(str(record))
+        return "\n".join(matches) if matches else "No matching contacts found."
+
+    @input_error
+    def delete_contact(self, args: List[str]) -> str:
+        if not args:
+            raise IndexError
+        name = args[0]
+        self.book.delete(name)
+        self.save_data()
+        return f"Contact {name} deleted."
+
+    @input_error
     def add_birthday(self, args: List[str]) -> str:
         if len(args) < 2:
             raise IndexError
@@ -123,15 +152,47 @@ class Bot:
             for b in upcoming
         )
 
+    @input_error
+    def add_email(self, args: List[str]) -> str:
+        if len(args) < 2:
+            raise IndexError
+        name, email = args[0], args[1]
+        record = self.book.find(name)
+        if not record:
+            raise KeyError(name)
+        record.add_email(email)
+        self.save_data()
+        return "Email added."
+
+    @input_error
+    def add_address(self, args: List[str]) -> str:
+        if len(args) < 2:
+            raise IndexError
+        name = args[0]
+        address = " ".join(args[1:])
+        record = self.book.find(name)
+        if not record:
+            raise KeyError(name)
+        record.add_address(address)
+        self.save_data()
+        return "Address added."
+
     def show_help(self, _: List[str]) -> str:
         return """Available commands:
+    Contact Management:
     - add [name] [phone] - Add a new contact or phone
     - change [name] [old phone] [new phone] - Change existing phone
     - phone [name] - Show contact's phones
     - all - Show all contacts
+    - find [query] - Search contacts
+    - delete-contact [name] - Delete a contact
     - add-birthday [name] [DD.MM.YYYY] - Add birthday
     - show-birthday [name] - Show contact's birthday
-    - birthdays - Show upcoming birthdays
+    - birthdays [days] - Show upcoming birthdays
+    - add-email [name] [email] - Add email
+    - add-address [name] [address] - Add address
+
+    Other Commands:
     - hello - Get a greeting
     - help - Show this help
     - exit/close - Exit the program"""
