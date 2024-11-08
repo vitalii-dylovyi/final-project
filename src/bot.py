@@ -1,5 +1,6 @@
 from typing import List, Tuple, Callable
 from .services.storage import AddressBook
+from .services.notebook import NoteBook
 from .services.record import Record
 from .models.base import ValidationError
 
@@ -23,7 +24,9 @@ def input_error(func: Callable):
 class Bot:
     def __init__(self):
         self.book = AddressBook()
+        self.notebook = NoteBook()
         self.book.load_from_file()
+        self.notebook.load_from_file()
         self._setup_commands()
 
     def _setup_commands(self):
@@ -39,6 +42,14 @@ class Bot:
             "birthdays": self.birthdays,
             "add-email": self.add_email,
             "add-address": self.add_address,
+            "add-note": self.add_note,
+            "show-note": self.show_note,
+            "all-notes": self.show_all_notes,
+            "delete-note": self.delete_note,
+            "edit-note": self.edit_note,
+            "add-tag": self.add_tag,
+            "search-notes": self.search_notes,
+            "search-tags": self.search_by_tags,
             "help": self.show_help,
             "hello": lambda _: "How can I help you?",
         }
