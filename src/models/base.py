@@ -27,6 +27,7 @@ class Field:
         return str(self._value)
     
 
+    
 class Note:
     def __init__(self, title: str, content: str, tags: Set[str] = None):
         self.title = title
@@ -56,4 +57,5 @@ class Note:
             f"Created: {self.created_at:%Y-%m-%d %H:%M:%S}\n"
             f"Modified: {self.modified_at:%Y-%m-%d %H:%M:%S}"
         )
+   
 

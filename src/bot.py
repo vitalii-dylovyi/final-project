@@ -26,7 +26,6 @@ class Bot:
         self.book = AddressBook()
         self.notebook = NoteBook()
         self.book.load_from_file()
-        self.notebook.load_from_file()
         self._setup_commands()
 
     def _setup_commands(self):
@@ -47,9 +46,6 @@ class Bot:
             "all-notes": self.show_all_notes,
             "delete-note": self.delete_note,
             "edit-note": self.edit_note,
-            "add-tag": self.add_tag,
-            "search-notes": self.search_notes,
-            "search-tags": self.search_by_tags,
             "help": self.show_help,
             "hello": lambda _: "How can I help you?",
         }
@@ -187,6 +183,52 @@ class Bot:
         record.add_address(address)
         self.save_data()
         return "Address added."
+    
+    @input_error
+    def add_note(self, args: List[str]) -> str:
+        if len(args) < 2:
+            raise IndexError
+        title = args[0]
+        content = " ".join(args[1:])
+        self.notebook.add_note(title, content)
+        self.save_data()
+        return "Note added."
+
+    @input_error
+    def show_note(self, args: List[str]) -> str:
+        if not args:
+            raise IndexError
+        note = self.notebook.find_note(args[0])
+        if not note:
+            raise KeyError(args[0])
+        return str(note)
+
+    @input_error
+    def show_all_notes(self, _: List[str]) -> str:
+        notes = self.notebook.get_all_notes()
+        if not notes:
+            return "No notes saved."
+        return "\n\n".join(str(note) for note in notes)
+
+    @input_error
+    def delete_note(self, args: List[str]) -> str:
+        if not args:
+            raise IndexError
+        self.notebook.delete_note(args[0])
+        self.save_data()
+        return "Note deleted."
+
+    @input_error
+    def edit_note(self, args: List[str]) -> str:
+        if len(args) < 2:
+            raise IndexError
+        title = args[0]
+        content = " ".join(args[1:])
+        self.notebook.update_note(title, content)
+        self.save_data()
+        return "Note updated."
+
+    
 
     def show_help(self, _: List[str]) -> str:
         return """Available commands:
