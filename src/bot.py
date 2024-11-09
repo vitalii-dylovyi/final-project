@@ -244,6 +244,13 @@ class Bot:
     - add-email [name] [email] - Add email
     - add-address [name] [address] - Add address
 
+    Note Management:
+    - add-note [title] [content] - Add a new note
+    - show-note [title] - Show a specific note
+    - all-notes - Show all notes
+    - delete-note [title] - Delete a note
+    - edit-note [title] [new content] - Edit a note
+
     Other Commands:
     - hello - Get a greeting
     - help - Show this help
