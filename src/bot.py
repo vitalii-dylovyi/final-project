@@ -1,8 +1,9 @@
-from typing import List, Tuple, Callable
+from typing import List, Tuple, Callable, Optional
 from .services.storage import AddressBook
 from .services.notebook import NoteBook
 from .services.record import Record
 from .models.base import ValidationError
+from difflib import get_close_matches
 
 
 def input_error(func: Callable):
@@ -53,6 +54,15 @@ class Bot:
             "help": self.show_help,
             "hello": lambda _: "How can I help you?",
         }
+
+    def find_closest_command(self, user_input: str) -> Optional[str]:
+        words = user_input.lower().split()
+        all_commands = list(self.commands.keys())
+        for word in words:
+            matches = get_close_matches(word, all_commands, n=1, cutoff=0.6)
+            if matches:
+                return matches[0]
+        return None
 
     def save_data(self):
         self.book.save_to_file()
@@ -316,4 +326,8 @@ class Bot:
             if handler:
                 print(handler(args))
             else:
-                print("Invalid command. Type 'help' for available commands.")
+                closest = self.find_closest_command(user_input)
+                if closest:
+                    print(f"Command not found. Did you mean '{closest}'?")
+                else:
+                    print("Invalid command. Type 'help' for available commands.")
