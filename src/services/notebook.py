@@ -26,4 +26,22 @@ class NoteBook:
 
     def get_all_notes(self) -> List[Note]:
         return list(self.notes.values())
+    
+    def add_tag(self, title: str, tag: str) -> None:
+        if title not in self.notes:
+            raise KeyError(f"Note '{title}' not found")
+        self.notes[title].add_tag(tag)
 
+    def remove_tag(self, title: str, tag: str) -> None:
+        if title not in self.notes:
+            raise KeyError(f"Note '{title}' not found")
+        self.notes[title].remove_tag(tag)
+
+    def search_by_tags(self, tags: List[str]) -> List[Note]:
+        search_tags = set(tag.lower() for tag in tags)
+        return [note for note in self.notes.values() if search_tags.intersection(note.tags)]
+
+    def search_by_text(self, query: str) -> List[Note]:
+        query = query.lower()
+        return [note for note in self.notes.values() 
+                if query in note.title.lower() or query in note.content.lower()]

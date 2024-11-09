@@ -46,6 +46,10 @@ class Bot:
             "all-notes": self.show_all_notes,
             "delete-note": self.delete_note,
             "edit-note": self.edit_note,
+            "add-tag": self.add_tag,
+            "remove-tag": self.remove_tag,
+            "search-notes": self.search_notes,
+            "search-tags": self.search_by_tags,
             "help": self.show_help,
             "hello": lambda _: "How can I help you?",
         }
@@ -228,6 +232,42 @@ class Bot:
         self.save_data()
         return "Note updated."
 
+    @input_error
+    def add_tag(self, args: List[str]) -> str:
+        if len(args) < 2:
+            raise IndexError
+        title, tag = args[0], args[1]
+        self.notebook.add_tag(title, tag)
+        self.save_data()
+        return "Tag added."
+
+    @input_error
+    def remove_tag(self, args: List[str]) -> str:
+        if len(args) < 2:
+            raise IndexError
+        title, tag = args[0], args[1]
+        self.notebook.remove_tag(title, tag)
+        self.save_data()
+        return "Tag removed."
+
+    @input_error
+    def search_notes(self, args: List[str]) -> str:
+        if not args:
+            raise IndexError
+        query = " ".join(args)
+        notes = self.notebook.search_by_text(query)
+        if not notes:
+            return "No matching notes found."
+        return "\n\n".join(str(note) for note in notes)
+
+    @input_error
+    def search_by_tags(self, args: List[str]) -> str:
+        if not args:
+            raise IndexError
+        notes = self.notebook.search_by_tags(args)
+        if not notes:
+            return "No notes found with specified tags."
+        return "\n\n".join(str(note) for note in notes)
 
     def show_help(self, _: List[str]) -> str:
         return """Available commands:
@@ -250,6 +290,11 @@ class Bot:
     - all-notes - Show all notes
     - delete-note [title] - Delete a note
     - edit-note [title] [new content] - Edit a note
+    - add-tag [title] [tag] - Add a tag to a note
+    - remove-tag [title] [tag] - Remove a tag from a note
+    - search-notes [query] - Search notes by text
+    - search-tags [tag1] [tag2] ... - Search notes by tags
+
 
     Other Commands:
     - hello - Get a greeting
