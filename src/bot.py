@@ -187,7 +187,7 @@ class Bot:
         record.add_address(address)
         self.save_data()
         return "Address added."
-    
+
     @input_error
     def add_note(self, args: List[str]) -> str:
         if len(args) < 2:

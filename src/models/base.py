@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional, Set
 
+
 class ValidationError(Exception):
     pass
 
