@@ -1,4 +1,4 @@
-from typing import List, Tuple, Callable
+from typing import List, Tuple, Callable, Optional
 from .services.storage import AddressBook
 from .services.notebook import NoteBook
 from .services.record import Record
@@ -330,4 +330,4 @@ class Bot:
                 if closest:
                     print(f"Command not found. Did you mean '{closest}'?")
                 else:
-                print("Invalid command. Type 'help' for available commands.")
+                    print("Invalid command. Type 'help' for available commands.")
