@@ -36,13 +36,6 @@ class Note:
         self.created_at = datetime.now()
         self.modified_at = self.created_at
 
-    def add_tag(self, tag: str) -> None:
-        self.tags.add(tag.lower())
-        self.modified_at = datetime.now()
-
-    def remove_tag(self, tag: str) -> None:
-        self.tags.discard(tag.lower())
-        self.modified_at = datetime.now()
 
     def update_content(self, content: str) -> None:
         self.content = content
