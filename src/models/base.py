@@ -27,21 +27,31 @@ class Field:
 
 
 class Note:
-    def __init__(self, title: str, content: str):
+    def __init__(self, title: str, content: str, tags: Set[str] = None):
         self.title = title
         self.content = content
+        self.tags = tags or set()
         self.created_at = datetime.now()
         self.modified_at = self.created_at
 
+    def add_tag(self, tag: str) -> None:
+        self.tags.add(tag.lower())
+        self.modified_at = datetime.now()
+
+    def remove_tag(self, tag: str) -> None:
+        self.tags.discard(tag.lower())
+        self.modified_at = datetime.now()
 
     def update_content(self, content: str) -> None:
         self.content = content
         self.modified_at = datetime.now()
 
     def __str__(self) -> str:
+        tags_str = ", ".join(sorted(self.tags)) if self.tags else "No tags"
         return (
             f"Title: {self.title}\n"
             f"Content: {self.content}\n"
+            f"Tags: {tags_str}\n"
             f"Created: {self.created_at:%Y-%m-%d %H:%M:%S}\n"
             f"Modified: {self.modified_at:%Y-%m-%d %H:%M:%S}"
         )
