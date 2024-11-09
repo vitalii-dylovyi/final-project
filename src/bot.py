@@ -326,4 +326,8 @@ class Bot:
             if handler:
                 print(handler(args))
             else:
+                closest = self.find_closest_command(user_input)
+                if closest:
+                    print(f"Command not found. Did you mean '{closest}'?")
+                else:
                 print("Invalid command. Type 'help' for available commands.")
