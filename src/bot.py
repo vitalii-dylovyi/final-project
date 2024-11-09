@@ -1,5 +1,6 @@
 from typing import List, Tuple, Callable
 from .services.storage import AddressBook
+from .services.notebook import NoteBook
 from .services.record import Record
 from .models.base import ValidationError
 
@@ -23,6 +24,7 @@ def input_error(func: Callable):
 class Bot:
     def __init__(self):
         self.book = AddressBook()
+        self.notebook = NoteBook()
         self.book.load_from_file()
         self._setup_commands()
 
@@ -39,6 +41,11 @@ class Bot:
             "birthdays": self.birthdays,
             "add-email": self.add_email,
             "add-address": self.add_address,
+            "add-note": self.add_note,
+            "show-note": self.show_note,
+            "all-notes": self.show_all_notes,
+            "delete-note": self.delete_note,
+            "edit-note": self.edit_note,
             "help": self.show_help,
             "hello": lambda _: "How can I help you?",
         }
@@ -176,6 +183,51 @@ class Bot:
         record.add_address(address)
         self.save_data()
         return "Address added."
+    
+    @input_error
+    def add_note(self, args: List[str]) -> str:
+        if len(args) < 2:
+            raise IndexError
+        title = args[0]
+        content = " ".join(args[1:])
+        self.notebook.add_note(title, content)
+        self.save_data()
+        return "Note added."
+
+    @input_error
+    def show_note(self, args: List[str]) -> str:
+        if not args:
+            raise IndexError
+        note = self.notebook.find_note(args[0])
+        if not note:
+            raise KeyError(args[0])
+        return str(note)
+
+    @input_error
+    def show_all_notes(self, _: List[str]) -> str:
+        notes = self.notebook.get_all_notes()
+        if not notes:
+            return "No notes saved."
+        return "\n\n".join(str(note) for note in notes)
+
+    @input_error
+    def delete_note(self, args: List[str]) -> str:
+        if not args:
+            raise IndexError
+        self.notebook.delete_note(args[0])
+        self.save_data()
+        return "Note deleted."
+
+    @input_error
+    def edit_note(self, args: List[str]) -> str:
+        if len(args) < 2:
+            raise IndexError
+        title = args[0]
+        content = " ".join(args[1:])
+        self.notebook.update_note(title, content)
+        self.save_data()
+        return "Note updated."
+
 
     def show_help(self, _: List[str]) -> str:
         return """Available commands:
@@ -191,6 +243,13 @@ class Bot:
     - birthdays [days] - Show upcoming birthdays
     - add-email [name] [email] - Add email
     - add-address [name] [address] - Add address
+
+    Note Management:
+    - add-note [title] [content] - Add a new note
+    - show-note [title] - Show a specific note
+    - all-notes - Show all notes
+    - delete-note [title] - Delete a note
+    - edit-note [title] [new content] - Edit a note
 
     Other Commands:
     - hello - Get a greeting
