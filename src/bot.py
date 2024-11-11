@@ -27,6 +27,7 @@ class Bot:
         self.book = AddressBook()
         self.notebook = NoteBook()
         self.book.load_from_file()
+        self.notebook.load_from_file()
         self._setup_commands()
 
     def _setup_commands(self):
@@ -66,6 +67,7 @@ class Bot:
 
     def save_data(self):
         self.book.save_to_file()
+        self.notebook.save_to_file()
 
     def parse_input(self, user_input: str) -> Tuple[str, List[str]]:
         parts = user_input.strip().split()

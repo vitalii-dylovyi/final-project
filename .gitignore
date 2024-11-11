@@ -166,3 +166,4 @@ cython_debug/
 
 # Internal stuff
 addressbook.pkl
+notebook.pkl
